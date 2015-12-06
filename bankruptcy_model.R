@@ -236,7 +236,7 @@ f <- predict(m1_1_tr, n.ahead=36, se.fit=T, interval="predict", newxreg = data.f
 f$upper <- f$pred + f$se * 1.96
 f$lower <- f$pred - f$se * 1.96
 plot(bank_rate, xlim=c(1987,2010), main ="m1_1_tr: (4,1,2)(1,0,7)")#, ylim=c(500,7000))
-abline(v = 2006, lwd = 2, col = "black")
+abline(v = 2007, lwd = 2, col = "black")
 lines(exp(f$pred), col="blue")
 lines(exp(f$lower), col="red")
 lines(exp(f$upper), col="red")
@@ -247,7 +247,7 @@ f <- predict(m33_1_tr, n.ahead=36, se.fit=T, interval="predict", newxreg = data.
 f$upper <- f$pred + f$se * 1.96
 f$lower <- f$pred - f$se * 1.96
 plot(bank_rate, xlim=c(1987,2010), main = "m33_1_tr: (1,1,1)(1,0,5)")#, ylim=c(500,7000))
-abline(v = 2006, lwd = 2, col = "black")
+abline(v = 2007, lwd = 2, col = "black")
 lines(exp(f$pred), col="blue")
 lines(exp(f$lower), col="red")
 lines(exp(f$upper), col="red")
@@ -257,7 +257,7 @@ f <- predict(mb_tr, n.ahead=36, se.fit=T, interval="predict", newxreg = data.fra
 f$upper <- f$pred + f$se * 1.96
 f$lower <- f$pred - f$se * 1.96
 plot(bank_rate, xlim=c(1987,2010), main = "mb_tr:(4,1,4)(2,0,1)")#, ylim=c(500,7000))
-abline(v = 2006, lwd = 2, col = "black")
+abline(v = 2007, lwd = 2, col = "black")
 lines(exp(f$pred), col="blue")
 lines(exp(f$lower), col="red")
 lines(exp(f$upper), col="red")
