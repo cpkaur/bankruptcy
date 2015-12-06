@@ -137,19 +137,14 @@ Rmse_val <-c(RMSE(m1),RMSE(m2),RMSE(m4),RMSE(m5),
 d <- data.frame(sigma2, loglik, AIC, Rmse_val)
 d
 
-## min(sigma) <- m1
-## min(aic) <- m33
-## min(loglik) <- m36
-## min(rmse) <- m1
-
-
 #Fit an ARIMA model with covariate information
-m1_1<- arima(bank_rate, order = c(4,1,2), seasonal = list(order = c(1,0,7), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
-m33_1<- arima(bank_rate, order = c(1,1,1), seasonal = list(order = c(1,0,5), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
-m36_1<- arima(bank_rate, order = c(1,1,1), seasonal = list(order = c(1,0,2), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
-
+m1_1<- arima(log(bank_rate), order = c(4,1,2), seasonal = list(order = c(1,0,7), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
+m33_1<- arima(log(bank_rate), order = c(1,1,1), seasonal = list(order = c(1,0,5), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
+m36_1<- arima(log(bank_rate), order = c(1,1,1), seasonal = list(order = c(1,0,2), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
+mb<- arima(log(bank_rate), order = c(4,1,4), seasonal = list(order = c(2,0,1), period = 1), xreg = data.frame(pop,unemp,house), method = "ML")
 m1$loglik
 m1_1$loglik
+mb$loglik
 m33$loglik
 m33_1$loglik
 m36$loglik
@@ -157,6 +152,7 @@ m36_1$loglik
 
 m1$aic
 m1_1$aic
+mb$aic
 m33$aic
 m33_1$aic
 m36$aic
@@ -164,11 +160,13 @@ m36_1$aic
 
 m1$sigma2
 m1_1$sigma2
+mb$sigma2
 m33$sigma2
 m33_1$sigma2
 m36$sigma2
 m36_1$sigma2
 
+## best models so far
 # sigma2 -- m1_1
 # aic --- 36
 # loglik --- 36
@@ -180,17 +178,88 @@ m36_1$sigma2
 # m52
 # m51 <- arima(log(bank_rate), order = c(4,1,2), seasonal = list(order = c(1,0,8), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
 
-
+# NORMALITY
 plot(residuals(m1_1))
 plot(residuals(m36))
-tsdiag(m1_1)
 qqnorm(m1_1$residuals)
 qqline(m1_1$residuals)
+shapiro.test(m1_1$residuals) 
+hist(m1_1$residuals, n=100, main="Histogram",
+     xlab="Model Residuals")
+
+# Zero Mean
+t.test(m1_1$residuals) 
+
+# HOMOSCEDASTICITY
+library(lawstat)
+par(mfrow=c(1,1))
+plot(m1_1$residuals, main="Residuals vs t", ylab="")
+abline(v=c(1994,2002), lwd=3, col="red")
+#group into different sections for testing
+group <- c(rep(1,96),rep(2,96),rep(3,96)) # useful to try different groupings
+levene.test(m1_1$residuals,group) 
+bartlett.test(m1_1$residuals,group)
+
+# ZERO CORRELATION
+# test for uncorrelatedness / randomness
+tsdiag(m1_1)
+runs.test(m1_1$residuals) 
+Box.test(m1_1$residuals, type = c("Ljung-Box"))
+
+######################################################################
+
+#### Splitting the data and validating the models
+
+train <- read.csv('train.csv')[1:240,]
+test <- read.csv('train.csv')[241:288,]
+br_train <- ts(train$Bankruptcy_Rate, start= c(1987,1), end= c(2006,12),frequency= 12)
+ur_train <- ts(train$Unemployment_Rate, start= c(1987,1), end= c(2006,12),frequency= 12)
+pop_train <- ts(train$Population, start= c(1987,1), end= c(2006,12),frequency= 12)
+hpi_train <- ts(train$House_Price_Index, start= c(1987,1), end= c(2006,12),frequency= 12)
+br_test <- ts(test$Bankruptcy_Rate, start= c(2007,1), end= c(2010,12),frequency= 12)
+ur_test <- ts(test$Unemployment_Rate, start= c(2007,1), end= c(2010,12),frequency= 12)
+pop_test <- ts(test$Population, start= c(2007,1), end= c(2010,12),frequency= 12)
+hpi_test <- ts(test$House_Price_Index, start= c(2007,1), end= c(2010,12),frequency= 12)
+
+# building models with training data 
+m1_1_tr<- arima(log(br_train), order = c(4,1,2), seasonal = list(order = c(1,0,7), period = 12), xreg = data.frame(pop_train,ur_train,hpi_train), method = "ML")
+m33_tr <- arima(log(br_train), order = c(1,1,1), seasonal = list(order = c(1,0,5), period = 12), method = "ML")
+m36_tr <- arima(log(br_train), order = c(1,1,1), seasonal = list(order = c(1,0,2), period = 12), method = "ML")
+m33_1_tr <- arima(log(br_train), order = c(1,1,1), seasonal = list(order = c(1,0,5), period = 12), xreg = data.frame(pop_train,ur_train,hpi_train), method = "ML")
+m36_1_tr <- arima(log(br_train), order = c(1,1,1), seasonal = list(order = c(1,0,2), period = 12), xreg = data.frame(pop_train,ur_train,hpi_train), method = "ML")
+mb_tr <- arima(log(br_train), order = c(4,1,4), seasonal = list(order = c(2,0,1), period = 1), xreg = data.frame(pop_train,ur_train,hpi_train), method = "ML")
 
 
-## Chosing m1_1 as the best model
+## prediction and comparison
+par(mfrow =c(3,1))
+f <- predict(m1_1_tr, n.ahead=36, se.fit=T, interval="predict", newxreg = data.frame(pop_test,ur_test,hpi_test))
+f$upper <- f$pred + f$se * 1.96
+f$lower <- f$pred - f$se * 1.96
+plot(bank_rate, xlim=c(1987,2010), main ="m1_1_tr: (4,1,2)(1,0,7)")#, ylim=c(500,7000))
+abline(v = 2006, lwd = 2, col = "black")
+lines(exp(f$pred), col="blue")
+lines(exp(f$lower), col="red")
+lines(exp(f$upper), col="red")
+# this last one shows the fit of the model on the history.
+lines(exp(fitted(m1_1_tr)), col='green')
 
-## trying this by splitting the data set into training
-## and test set also trying rolling window method 
-## of prediction
+f <- predict(m33_1_tr, n.ahead=36, se.fit=T, interval="predict", newxreg = data.frame(pop_test,ur_test,hpi_test))
+f$upper <- f$pred + f$se * 1.96
+f$lower <- f$pred - f$se * 1.96
+plot(bank_rate, xlim=c(1987,2010), main = "m33_1_tr: (1,1,1)(1,0,5)")#, ylim=c(500,7000))
+abline(v = 2006, lwd = 2, col = "black")
+lines(exp(f$pred), col="blue")
+lines(exp(f$lower), col="red")
+lines(exp(f$upper), col="red")
+lines(exp(fitted(m33_1_tr)), col='green')
+
+f <- predict(mb_tr, n.ahead=36, se.fit=T, interval="predict", newxreg = data.frame(pop_test,ur_test,hpi_test))
+f$upper <- f$pred + f$se * 1.96
+f$lower <- f$pred - f$se * 1.96
+plot(bank_rate, xlim=c(1987,2010), main = "mb_tr:(4,1,4)(2,0,1)")#, ylim=c(500,7000))
+abline(v = 2006, lwd = 2, col = "black")
+lines(exp(f$pred), col="blue")
+lines(exp(f$lower), col="red")
+lines(exp(f$upper), col="red")
+lines(exp(fitted(mb_tr)), col='green')
 
