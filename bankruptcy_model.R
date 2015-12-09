@@ -271,6 +271,8 @@ hpi_test <- ts(test$House_Price_Index, start= c(2007,1), end= c(2010,12),frequen
 # ####
 
 # rolling window
+
+## m1_1 with all three covariates
 train <- read.csv('train.csv')[1:240,]
 test <- read.csv('train.csv')[241:288,]
 br_train <- ts(train$Bankruptcy_Rate, start= c(1987,1), end= c(2006,12),frequency= 12)
@@ -287,8 +289,8 @@ preds <- c()
 predsLower <- c()
 predsUpper <- c()
 for (i in 1:length(br_test)){
-  m1_1_roll <- arima(data1, order=c(4,1,2), seasonal = list(order=c(1,0,7), period=1) , xreg = data.frame(pop_train,ur_train), method = "ML")
-  one_ahead <- predict(m1_1_roll, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1]))
+  m1_1_roll <- arima(data1, order=c(4,1,2), seasonal = list(order=c(1,0,7), period=1) , xreg = data.frame(pop_train,ur_train, hpi_train), method = "ML")
+  one_ahead <- predict(m1_1_roll, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1], hpi_test[1]))
   preds <- ts(c(preds, one_ahead$pred), start=c(2007,1))
   predsLower <-ts(c(predsLower, one_ahead$pred - 1.96*one_ahead$se), start=c(2007,1))
   predsUpper <- ts(c(predsUpper, one_ahead$pred + 1.96*one_ahead$se), start=c(2007,1))
@@ -297,12 +299,15 @@ for (i in 1:length(br_test)){
   pop_test <- pop_test[-1]
   ur_train <- ts(c(ur_train, ur_test[1]), start = (ur_train))
   ur_test <- ur_test[-1]
+  hpi_train <- ts(c(hpi_train,hpi_test[1]), start = (hpi_train))
+  hpi_test <- hpi_test[-1]
   }
 tspred <- ts(preds, start = c(2007,1), end= c(2010,12), frequency = 12)
 tspredU <- ts(predsUpper, start = c(2007,1), end= c(2010,12), frequency = 12)
 tspredL <- ts(predsLower, start = c(2007,1), end= c(2010,12), frequency = 12)
 par(mfrow=c(3,1))
-plot(bank_rate, main = "m1_1_roll:(4,1,2)(1,0,7) Rolling window")#, ylim=c(500,7000))
+par(mar= c(3,3.1,3,3.1))
+plot(bank_rate, main = "m1_1_roll:(4,1,2)(1,0,7) Rolling window with all three cov")#, ylim=c(500,7000))
 abline(v = 2007, lwd = 2, col = "black")
 lines(exp(tspred), col="blue")
 lines(exp(tspredU), col = "red")
@@ -328,8 +333,8 @@ preds2 <- c()
 predsLower2 <- c()
 predsUpper2 <- c()
 for (i in 1:length(br_test)){
-  m33_1_roll <- arima(data12, order = c(1,1,1), seasonal = list(order = c(1,0,5), period = 1), xreg = data.frame(pop_train,ur_train), method = "ML")
-  one_ahead <- predict(m33_1_roll, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1]))
+  m33_1_roll <- arima(data12, order = c(1,1,1), seasonal = list(order = c(1,0,5), period = 1), xreg = data.frame(pop_train,ur_train, hpi_train), method = "ML")
+  one_ahead <- predict(m33_1_roll, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1], hpi_test[1]))
   preds2 <- ts(c(preds2, one_ahead$pred), start=c(2007,1))
   predsLower2 <-ts(c(predsLower2, one_ahead$pred - 1.96*one_ahead$se), start=c(2007,1))
   predsUpper2 <- ts(c(predsUpper2, one_ahead$pred + 1.96*one_ahead$se),  start=c(2007,1))
@@ -338,13 +343,15 @@ for (i in 1:length(br_test)){
   pop_test <- pop_test[-1]
   ur_train <- ts(c(ur_train, ur_test[1]), start = (ur_train))
   ur_test <- ur_test[-1]
+  hpi_train <- ts(c(hpi_train,hpi_test[1]), start = (hpi_train))
+  hpi_test <- hpi_test[-1]
 }
 
 tspred2 <- ts(preds2, start = c(2007,1), end= c(2010,12), frequency = 12)
 tspredU2 <- ts(predsUpper2, start = c(2007,1), end= c(2010,12), frequency = 12)
 tspredL2 <- ts(predsLower2, start = c(2007,1), end= c(2010,12), frequency = 12)
 
-plot(bank_rate, main = "m33_1_roll:(1,1,1)(1,0,5) Rolling window")#, ylim=c(500,7000))
+plot(bank_rate, main = "m33_1_roll:(1,1,1)(1,0,5) Rolling window all three cov")#, ylim=c(500,7000))
 abline(v = 2007, lwd = 2, col = "black")
 lines(exp(tspred2), col="blue")
 lines(exp(tspredU2), col = "red")
@@ -371,8 +378,8 @@ predsLower3 <- c()
 predsUpper3 <- c()
 for (i in 1:length(br_test)){
  
-  mb_roll <- arima(data13, order = c(4,1,4), seasonal = list(order = c(2,0,1), period = 1), xreg = data.frame(pop_train,ur_train), method = "ML")
-  one_ahead3 <- predict(mb_roll, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1]))
+  mb_roll <- arima(data13, order = c(4,1,4), seasonal = list(order = c(2,0,1), period = 1), xreg = data.frame(pop_train,ur_train, hpi_train), method = "ML")
+  one_ahead3 <- predict(mb_roll, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1], hpi_test[1]))
   preds3 <- ts(c(preds3, one_ahead$pred), start=c(2007,1))
   predsLower3 <-ts(c(predsLower3, one_ahead$pred - 1.96*one_ahead$se), start=c(2007,1))
   predsUpper3 <- ts(c(predsUpper3, one_ahead$pred + 1.96*one_ahead$se),  start=c(2007,1))
@@ -381,13 +388,15 @@ for (i in 1:length(br_test)){
   pop_test <- pop_test[-1]
   ur_train <- ts(c(ur_train, ur_test[1]), start = (ur_train))
   ur_test <- ur_test[-1]
+  hpi_train <- ts(c(hpi_train,hpi_test[1]), start = (hpi_train))
+  hpi_test <- hpi_test[-1]
 }
 
 tspred3 <- ts(preds3, start = c(2007,1), end= c(2010,12), frequency = 12)
 tspredU3 <- ts(predsUpper3, start = c(2007,1), end= c(2010,12), frequency = 12)
 tspredL3 <- ts(predsLower3, start = c(2007,1), end= c(2010,12), frequency = 12)
 
-plot(bank_rate, main = "mb_roll:(4,1,4)(2,0,1) Rolling window")
+plot(bank_rate, main = "mb_roll:(4,1,4)(2,0,1) Rolling window all three cov")
 abline(v = 2007, lwd = 2, col = "black")
 lines(exp(tspred3), col="blue")
 lines(exp(tspredU3), col = "red")
@@ -400,9 +409,9 @@ rmspe_rollb
 rmspe_roll2 <- sqrt(mean((exp(tspred2) - br_test)^2))
 rmspe_roll2
 rmspe_roll1 <- sqrt(mean((exp(tspred) - br_test)^2))
-rmspe_roll1
+rmspe_roll1 # 0.00447627
 
-### Moving window--- M1_1
+### Moving window--- M1_1 with all three covariates
 
 train <- read.csv('train.csv')[1:240,]
 test <- read.csv('train.csv')[241:288,]
@@ -421,8 +430,8 @@ predsLowermv <- c()
 predsUppermv <- c()
 
 for (i in 1:length(br_test)){
-  m1_1_mv <- arima(data1mv, order=c(4,1,2), seasonal = list(order=c(1,0,7), period=1) , xreg = data.frame(pop_train,ur_train), method = "ML")
-  one_ahead <- predict(m1_1_mv, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1]))
+  m1_1_mv <- arima(data1mv, order=c(4,1,2), seasonal = list(order=c(1,0,7), period=1) , xreg = data.frame(pop_train,ur_train, hpi_train), method = "ML")
+  one_ahead <- predict(m1_1_mv, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1], hpi_test[1]))
   predsmv <- ts(c(predsmv, one_ahead$pred), start=c(2007,1))
   predsLowermv <-ts(c(predsLowermv, one_ahead$pred - 1.96*one_ahead$se), start=c(2007,1))
   predsUppermv <- ts(c(predsUppermv, one_ahead$pred + 1.96*one_ahead$se), start=c(2007,1))
@@ -431,6 +440,8 @@ for (i in 1:length(br_test)){
   pop_test <- pop_test[-1]
   ur_train <- ts(c(ur_train[-1], ur_test[1]), start = (ur_train[-1]))
   ur_test <- ur_test[-1]
+  hpi_train <- ts(c(hpi_train[-1],hpi_test[1]), start = (hpi_train))
+  hpi_test <- hpi_test[-1]
 }
 
 tspredmv <- ts(predsmv, start = c(2007,1), end= c(2010,12), frequency = 12)
@@ -446,7 +457,7 @@ library(forecast)
 # fit.valmv<- ts(fitted(m1_1_mv), start=c(1987,1), end = c(2006,12),frequency = 12)
 # lines(exp(fit.valmv), col='green')
 rmspe_rollmv <- sqrt(mean((exp(tspredmv) - br_test)^2))
-rmspe_rollmv #0.005316885
+rmspe_rollmv #0.005316885 (using2--- pop and ur)--- all three indices # 0.009615296
 
 ## m33_1
 train <- read.csv('train.csv')[1:240,]
@@ -466,8 +477,8 @@ predsLowermv2 <- c()
 predsUppermv2 <- c()
 
 for (i in 1:length(br_test)){
-  m33_1_mv <- arima(data1mv2, order = c(1,1,1), seasonal = list(order = c(1,0,5), period=1) , xreg = data.frame(pop_train,ur_train), method = "ML")
-  one_ahead <- predict(m33_1_mv, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1]))
+  m33_1_mv <- arima(data1mv2, order = c(1,1,1), seasonal = list(order = c(1,0,5), period=1) , xreg = data.frame(pop_train,ur_train, hpi_train), method = "ML")
+  one_ahead <- predict(m33_1_mv, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1], hpi_test[1]))
   predsmv2 <- ts(c(predsmv2, one_ahead$pred), start=c(2007,1))
   predsLowermv2 <-ts(c(predsLowermv2, one_ahead$pred - 1.96*one_ahead$se), start=c(2007,1))
   predsUppermv2 <- ts(c(predsUppermv2, one_ahead$pred + 1.96*one_ahead$se), start=c(2007,1))
@@ -476,6 +487,8 @@ for (i in 1:length(br_test)){
   pop_test <- pop_test[-1]
   ur_train <- ts(c(ur_train[-1], ur_test[1]), start = (ur_train[-1]))
   ur_test <- ur_test[-1]
+  hpi_train <- ts(c(hpi_train[-1],hpi_test[1]), start = (hpi_train))
+  hpi_test <- hpi_test[-1]
 }
 
 tspredmv2 <- ts(predsmv2, start = c(2007,1), end= c(2010,12), frequency = 12)
@@ -510,8 +523,8 @@ predsLowermv3 <- c()
 predsUppermv3 <- c()
 
 for (i in 1:length(br_test)){
-  mb_mv <- arima(data1mv3, order = c(4,1,4), seasonal = list(order = c(2,0,1), period=1) , xreg = data.frame(pop_train,ur_train), method = "ML")
-  one_ahead <- predict(mb_mv, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1]))
+  mb_mv <- arima(data1mv3, order = c(4,1,4), seasonal = list(order = c(2,0,1), period=1) , xreg = data.frame(pop_train,ur_train, hpi_train), method = "ML")
+  one_ahead <- predict(mb_mv, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],ur_test[1], hpi_train[1]))
   predsmv3 <- ts(c(predsmv3, one_ahead$pred), start=c(2007,1))
   predsLowermv3 <-ts(c(predsLowermv3, one_ahead$pred - 1.96*one_ahead$se), start=c(2007,1))
   predsUppermv3 <- ts(c(predsUppermv3, one_ahead$pred + 1.96*one_ahead$se), start=c(2007,1))
@@ -520,6 +533,8 @@ for (i in 1:length(br_test)){
   pop_test <- pop_test[-1]
   ur_train <- ts(c(ur_train[-1], ur_test[1]), start = (ur_train[-1]))
   ur_test <- ur_test[-1]
+  hpi_train <- ts(c(hpi_train[-1],hpi_test[1]), start = (hpi_train[-1]))
+  hpi_test <- hpi_test[-1]
 }
 
 tspredmv3 <- ts(predsmv3, start = c(2007,1), end= c(2010,12), frequency = 12)
@@ -534,4 +549,95 @@ library(forecast)
 # fit.valmv<- ts(fitted(m1_1_mv), start=c(1987,1), end = c(2006,12),frequency = 12)
 # lines(exp(fit.valmv), col='green')
 rmspe_rollmv3 <- sqrt(mean((exp(tspredmv3) - br_test)^2))
-rmspe_rollmv3 #0.006687283
+rmspe_rollmv3 
+
+
+## rolling window vs moving window without unemployment rate for M1_1
+# rolling window
+train <- read.csv('train.csv')[1:240,]
+test <- read.csv('train.csv')[241:288,]
+br_train <- ts(train$Bankruptcy_Rate, start= c(1987,1), end= c(2006,12),frequency= 12)
+ur_train <- ts(train$Unemployment_Rate, start= c(1987,1), end= c(2006,12),frequency= 12)
+pop_train <- ts(train$Population, start= c(1987,1), end= c(2006,12),frequency= 12)
+hpi_train <- ts(train$House_Price_Index, start= c(1987,1), end= c(2006,12),frequency= 12)
+br_test <- ts(test$Bankruptcy_Rate, start= c(2007,1), end= c(2010,12),frequency= 12)
+ur_test <- ts(test$Unemployment_Rate, start= c(2007,1), end= c(2010,12),frequency= 12)
+pop_test <- ts(test$Population, start= c(2007,1), end= c(2010,12),frequency= 12)
+hpi_test <- ts(test$House_Price_Index, start= c(2007,1), end= c(2010,12),frequency= 12)
+
+data1 <- log(br_train)
+preds <- c()
+predsLower <- c()
+predsUpper <- c()
+for (i in 1:length(br_test)){
+  m1_1_roll <- arima(data1, order=c(4,1,2), seasonal = list(order=c(1,0,7), period=1) , xreg = data.frame(pop_train, hpi_train), method = "ML")
+  one_ahead <- predict(m1_1_roll, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1],hpi_test[1]))
+  preds <- ts(c(preds, one_ahead$pred), start=c(2007,1))
+  predsLower <-ts(c(predsLower, one_ahead$pred - 1.96*one_ahead$se), start=c(2007,1))
+  predsUpper <- ts(c(predsUpper, one_ahead$pred + 1.96*one_ahead$se), start=c(2007,1))
+  data1 <- ts(c(data1, one_ahead$pred), start = (data1))
+  pop_train <- ts(c(pop_train,pop_test[1]), start = (pop_train))
+  pop_test <- pop_test[-1]
+  hpi_train <- ts(c(hpi_train,hpi_test[1]), start = (hpi_train))
+  hpi_test <- hpi_test[-1]
+}
+tspred <- ts(preds, start = c(2007,1), end= c(2010,12), frequency = 12)
+tspredU <- ts(predsUpper, start = c(2007,1), end= c(2010,12), frequency = 12)
+tspredL <- ts(predsLower, start = c(2007,1), end= c(2010,12), frequency = 12)
+par(mfrow=c(2,1))
+plot(bank_rate, main = "m1_1_roll:(4,1,2)(1,0,7) Rolling window")#, ylim=c(500,7000))
+abline(v = 2007, lwd = 2, col = "black")
+lines(exp(tspred), col="blue")
+lines(exp(tspredU), col = "red")
+lines(exp(tspredL), col = "red")
+library(forecast)
+fit.val<- ts(fitted(m1_1_roll), start=c(1987,1), end = c(2006,12),frequency = 12)
+lines(exp(fit.val), col='green')
+# 0.007039486
+
+# moving window
+train <- read.csv('train.csv')[1:240,]
+test <- read.csv('train.csv')[241:288,]
+br_train <- ts(train$Bankruptcy_Rate, start= c(1987,1), end= c(2006,12),frequency= 12)
+ur_train <- ts(train$Unemployment_Rate, start= c(1987,1), end= c(2006,12),frequency= 12)
+pop_train <- ts(train$Population, start= c(1987,1), end= c(2006,12),frequency= 12)
+hpi_train <- ts(train$House_Price_Index, start= c(1987,1), end= c(2006,12),frequency= 12)
+br_test <- ts(test$Bankruptcy_Rate, start= c(2007,1), end= c(2010,12),frequency= 12)
+ur_test <- ts(test$Unemployment_Rate, start= c(2007,1), end= c(2010,12),frequency= 12)
+pop_test <- ts(test$Population, start= c(2007,1), end= c(2010,12),frequency= 12)
+hpi_test <- ts(test$House_Price_Index, start= c(2007,1), end= c(2010,12),frequency= 12)
+
+data1mv <- log(br_train)
+predsmv <- c()
+predsLowermv <- c()
+predsUppermv <- c()
+
+for (i in 1:length(br_test)){
+  m1_1_mv <- arima(data1mv, order=c(4,1,2), seasonal = list(order=c(1,0,7), period=1) , xreg = data.frame(pop_train, hpi_train), method = "ML")
+  one_ahead <- predict(m1_1_mv, n.ahead= 1, interval="predict", newxreg = data.frame(pop_test[1], hpi_test[1]))
+  predsmv <- ts(c(predsmv, one_ahead$pred), start=c(2007,1))
+  predsLowermv <-ts(c(predsLowermv, one_ahead$pred - 1.96*one_ahead$se), start=c(2007,1))
+  predsUppermv <- ts(c(predsUppermv, one_ahead$pred + 1.96*one_ahead$se), start=c(2007,1))
+  data1mv <- ts(c(data1mv[-1], one_ahead$pred), start = (data1mv[-1]))
+  pop_train <- ts(c(pop_train[-1],pop_test[1]), start = (pop_train[-1]))
+  pop_test <- pop_test[-1]
+  hpi_train <- ts(c(hpi_train[-1],hpi_test[1]), start = (hpi_train))
+  hpi_test <- hpi_test[-1]
+}
+
+tspredmv <- ts(predsmv, start = c(2007,1), end= c(2010,12), frequency = 12)
+tspredUmv <- ts(predsUppermv, start = c(2007,1), end= c(2010,12), frequency = 12)
+tspredLmv <- ts(predsLowermv, start = c(2007,1), end= c(2010,12), frequency = 12)
+
+plot(bank_rate, main = "m1_1_roll:(4,1,2)(1,0,7) Moving window with two cov")#, ylim=c(500,7000))
+abline(v = 2007, lwd = 2, col = "black")
+lines(exp(tspredmv), col="blue")
+lines(exp(tspredUmv), col = "red")
+lines(exp(tspredLmv), col = "red")
+library(forecast)
+# fit.valmv<- ts(fitted(m1_1_mv), start=c(1987,1), end = c(2006,12),frequency = 12)
+# lines(exp(fit.valmv), col='green')
+rmspe_rollmv <- sqrt(mean((exp(tspredmv) - br_test)^2))
+rmspe_rollmv 
+rmspe_roll <- sqrt(mean((exp(tspred) - br_test)^2))
+rmspe_roll
