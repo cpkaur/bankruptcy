@@ -138,7 +138,7 @@ pacf(diff(log(bank_rate)), lag.max = 128)
 # d
 # 
 # #Fit an ARIMA model with covariate information
-# m1_1<- arima(log(bank_rate), order = c(4,1,2), seasonal = list(order = c(1,0,7), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
+m1_1<- arima(log(bank_rate), order = c(4,1,2), seasonal = list(order = c(1,0,7), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
 # m33_1<- arima(log(bank_rate), order = c(1,1,1), seasonal = list(order = c(1,0,5), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
 # m36_1<- arima(log(bank_rate), order = c(1,1,1), seasonal = list(order = c(1,0,2), period = 12), xreg = data.frame(pop,unemp,house), method = "ML")
 # mb<- arima(log(bank_rate), order = c(4,1,4), seasonal = list(order = c(2,0,1), period = 1), xreg = data.frame(pop,unemp,house), method = "ML")
@@ -222,7 +222,7 @@ pop_test <- ts(test$Population, start= c(2007,1), end= c(2010,12),frequency= 12)
 hpi_test <- ts(test$House_Price_Index, start= c(2007,1), end= c(2010,12),frequency= 12)
 
 # # building models with training data 
-# m1_1_tr<- arima(log(br_train), order = c(4,1,2), seasonal = list(order = c(1,0,7), period = 12), xreg = data.frame(pop_train,ur_train,hpi_train), method = "ML")
+m1_1_tr<- arima(log(br_train), order = c(4,1,2), seasonal = list(order = c(1,0,7), period = 1), xreg = data.frame(pop_train,ur_train,hpi_train), method = "ML")
 # m33_tr <- arima(log(br_train), order = c(1,1,1), seasonal = list(order = c(1,0,5), period = 12), method = "ML")
 # m36_tr <- arima(log(br_train), order = c(1,1,1), seasonal = list(order = c(1,0,2), period = 12), method = "ML")
 # m33_1_tr <- arima(log(br_train), order = c(1,1,1), seasonal = list(order = c(1,0,5), period = 12), xreg = data.frame(pop_train,ur_train,hpi_train), method = "ML")
@@ -232,7 +232,7 @@ hpi_test <- ts(test$House_Price_Index, start= c(2007,1), end= c(2010,12),frequen
 
 # ## prediction and comparison
 # par(mfrow =c(3,1))
-# f <- predict(m1_1_tr, n.ahead=36, se.fit=T, interval="predict", newxreg = data.frame(pop_test,ur_test,hpi_test))
+f <- predict(m1_1_tr, n.ahead=36, se.fit=T, interval="predict", newxreg = data.frame(pop_test,ur_test,hpi_test))
 # f$upper <- f$pred + f$se * 1.96
 # f$lower <- f$pred - f$se * 1.96
 # plot(bank_rate, xlim=c(1987,2010), main ="m1_1_tr: (4,1,2)(1,0,7)")#, ylim=c(500,7000))
@@ -242,8 +242,8 @@ hpi_test <- ts(test$House_Price_Index, start= c(2007,1), end= c(2010,12),frequen
 # lines(exp(f$upper), col="red")
 # # this last one shows the fit of the model on the history.
 # lines(exp(fitted(m1_1_tr)), col='green')
-# rmspe <- sqrt(mean((as.numeric(exp(f$pred)) - br_test)^2))
-# rmspe 
+rmspe <- sqrt(mean((as.numeric(exp(f$pred)) - br_test)^2))
+rmspe 
 # 
 # f <- predict(m33_1_tr, n.ahead=36, se.fit=T, interval="predict", newxreg = data.frame(pop_test,ur_test,hpi_test))
 # f$upper <- f$pred + f$se * 1.96
@@ -621,7 +621,7 @@ for (i in 1:length(br_test)){
   data1mv <- ts(c(data1mv[-1], one_ahead$pred), start = (data1mv[-1]))
   pop_train <- ts(c(pop_train[-1],pop_test[1]), start = (pop_train[-1]))
   pop_test <- pop_test[-1]
-  hpi_train <- ts(c(hpi_train[-1],hpi_test[1]), start = (hpi_train))
+  hpi_train <- ts(c(hpi_train[-1],hpi_test[1]), start = (hpi_train[-1]))
   hpi_test <- hpi_test[-1]
 }
 
