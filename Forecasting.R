@@ -40,5 +40,10 @@ lines(exp(tspredUmv), col = "red")
 lines(exp(tspredLmv), col = "red")
 library(forecast) 
 
-t <- data.frame(exp(predsmv),exp(predsUppermv), exp(predsLowermv))
+t <- data.frame(Forecast = exp(predsmv), LowerLimit = exp(predsLowermv), UpperLimit = exp(predsUppermv))
 t
+
+write.table(t, file = "Forecast_values.txt", append = FALSE, quote = TRUE, sep = " ",
+            eol = "\n", na = "NA", dec = ".", row.names = TRUE,
+            col.names = TRUE, qmethod = c("escape", "double"),
+            fileEncoding = "")
